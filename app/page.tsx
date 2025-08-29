@@ -126,6 +126,7 @@ const Page = () => {
                   <SelectItem value="ME">Mechanical Engineering</SelectItem>
                   <SelectItem value="MM">Metallurgical Engineering</SelectItem>
                   <SelectItem value="EP">Engineering Physics</SelectItem>
+                  <SelectItem value="MC">Mathematics and computing</SelectItem>
                 </SelectContent>
               </Select>
             </div>
