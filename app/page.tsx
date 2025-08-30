@@ -10,6 +10,8 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Loader2, Search, User, Sparkles } from "lucide-react";
+import { flightRouterStateSchema } from "next/dist/server/app-render/types";
+import LoadingAnimation from "@/components/Loading";
 
 const Page = () => {
   const [year, setYear] = useState("");
@@ -24,6 +26,21 @@ const Page = () => {
     if (error) setError("");
   }, [year, branch, startRoll, endRoll]);
 
+  // First, you need to add this state variable at the top of your component
+  const [dots, setDots] = useState("");
+
+  // Then add this useEffect hook to animate the dots
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setDots((prev) => {
+        if (prev.length === 3) return "";
+        return prev + ".";
+      });
+    }, 500);
+
+    return () => clearInterval(timer);
+  }, []);
+
   const handleSubmit = async () => {
     if (!year || !branch || !startRoll || !endRoll) {
       setError("Please fill all fields");
@@ -32,12 +49,12 @@ const Page = () => {
 
     const start = parseInt(startRoll);
     const end = parseInt(endRoll);
-    
+
     if (isNaN(start) || isNaN(end) || start > end) {
       setError("Invalid roll number range");
       return;
     }
-    
+
     if (end - start > 50) {
       setError("Maximum range is 50 students at a time");
       return;
@@ -45,10 +62,10 @@ const Page = () => {
 
     setIsLoading(true);
     setError("");
-    
+
     // Simulate network delay for better UX feedback
-    await new Promise(resolve => setTimeout(resolve, 800));
-    
+    await new Promise((resolve) => setTimeout(resolve, 800));
+
     const urls: { url: string }[] = [];
     for (let i = start; i <= end; i++) {
       urls.push({
@@ -57,14 +74,14 @@ const Page = () => {
           .padStart(2, "0")}.JPG`,
       });
     }
-    
+
     setPhotoUrl(urls);
     setIsLoading(false);
   };
 
   const downloadAll = () => {
-    photoUrl.forEach(photo => {
-      const a = document.createElement('a');
+    photoUrl.forEach((photo) => {
+      const a = document.createElement("a");
       a.href = photo.url;
       a.download = photo.url.split("/").pop() || "photo.jpg";
       document.body.appendChild(a);
@@ -72,6 +89,8 @@ const Page = () => {
       document.body.removeChild(a);
     });
   };
+
+  return <LoadingAnimation />;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 py-8 px-4">
@@ -86,7 +105,8 @@ const Page = () => {
             <Sparkles className="h-8 w-8 text-purple-600" />
           </div>
           <p className="text-gray-600 max-w-2xl mx-auto">
-            Browse student photos by selecting year, branch, and roll number range
+            Browse student photos by selecting year, branch, and roll number
+            range
           </p>
         </div>
 
@@ -95,7 +115,9 @@ const Page = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
             {/* Year Select */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Academic Year</label>
+              <label className="text-sm font-medium text-gray-700">
+                Academic Year
+              </label>
               <Select onValueChange={setYear} value={year}>
                 <SelectTrigger className="w-full h-12 rounded-xl border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
                   <SelectValue placeholder="Select Year" />
@@ -113,7 +135,9 @@ const Page = () => {
 
             {/* Branch Select */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Branch</label>
+              <label className="text-sm font-medium text-gray-700">
+                Branch
+              </label>
               <Select onValueChange={setBranch} value={branch}>
                 <SelectTrigger className="w-full h-12 rounded-xl border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all">
                   <SelectValue placeholder="Select Branch" />
@@ -121,7 +145,9 @@ const Page = () => {
                 <SelectContent className="rounded-xl">
                   <SelectItem value="CE">Civil Engineering</SelectItem>
                   <SelectItem value="CS">Computer Science</SelectItem>
-                  <SelectItem value="EC">Electronics & Communication</SelectItem>
+                  <SelectItem value="EC">
+                    Electronics & Communication
+                  </SelectItem>
                   <SelectItem value="EE">Electrical Engineering</SelectItem>
                   <SelectItem value="ME">Mechanical Engineering</SelectItem>
                   <SelectItem value="MM">Metallurgical Engineering</SelectItem>
@@ -133,12 +159,16 @@ const Page = () => {
 
             {/* Roll Inputs */}
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">Roll Number Range</label>
+              <label className="text-sm font-medium text-gray-700">
+                Roll Number Range
+              </label>
               <div className="flex gap-2">
                 <Input
                   placeholder="Start"
                   value={startRoll}
-                  onChange={(e) => setStartRoll(e.target.value.replace(/\D/g, ''))}
+                  onChange={(e) =>
+                    setStartRoll(e.target.value.replace(/\D/g, ""))
+                  }
                   className="h-12 rounded-xl border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
                   type="number"
                   min="1"
@@ -146,7 +176,9 @@ const Page = () => {
                 <Input
                   placeholder="End"
                   value={endRoll}
-                  onChange={(e) => setEndRoll(e.target.value.replace(/\D/g, ''))}
+                  onChange={(e) =>
+                    setEndRoll(e.target.value.replace(/\D/g, ""))
+                  }
                   className="h-12 rounded-xl border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
                   type="number"
                   min="1"
@@ -155,8 +187,8 @@ const Page = () => {
             </div>
 
             {/* Submit Button */}
-            <Button 
-              onClick={handleSubmit} 
+            <Button
+              onClick={handleSubmit}
               disabled={isLoading}
               className="h-12 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all duration-300 shadow-md hover:shadow-lg"
             >
@@ -186,9 +218,10 @@ const Page = () => {
         {photoUrl.length > 0 && (
           <div className="flex justify-between items-center mb-6 animate-fade-in">
             <h2 className="text-2xl font-semibold text-gray-800">
-              Results: <span className="text-indigo-600">{photoUrl.length}</span> students found
+              Results:{" "}
+              <span className="text-indigo-600">{photoUrl.length}</span>{" "}
+              students found
             </h2>
-            
           </div>
         )}
 
@@ -207,7 +240,8 @@ const Page = () => {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
-                    target.src = "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YzZjZmOSIvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjgwIiByPSI0MCIgZmlsbD0iI2Q0ZDhkZiIvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjE2MCIgcng9IjYwIiByeT0iNDAiIGZpbGw9IiNkNGQ4ZGYiLz48L3N2Zz4=";
+                    target.src =
+                      "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YzZjZmOSIvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjgwIiByPSI0MCIgZmlsbD0iI2Q0ZDhkZiIvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjE2MCIgcng9IjYwIiByeT0iNDAiIGZpbGw9IiNkNGQ4ZGYiLz48L3N2Zz4=";
                   }}
                 />
                 <div className="absolute inset-0  bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300"></div>
@@ -225,7 +259,9 @@ const Page = () => {
             <div className="inline-flex items-center justify-center w-16 h-16 bg-indigo-100 rounded-full mb-4">
               <User className="h-8 w-8 text-indigo-600" />
             </div>
-            <h3 className="text-xl font-medium text-gray-700 mb-2">No photos to display</h3>
+            <h3 className="text-xl font-medium text-gray-700 mb-2">
+              No photos to display
+            </h3>
             <p className="text-gray-500 max-w-md mx-auto">
               Select year, branch, and roll number range to fetch student photos
             </p>
@@ -236,12 +272,22 @@ const Page = () => {
       {/* Add custom animations */}
       <style jsx global>{`
         @keyframes fade-in {
-          from { opacity: 0; }
-          to { opacity: 1; }
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
         }
         @keyframes slide-up {
-          from { transform: translateY(10px); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
+          from {
+            transform: translateY(10px);
+            opacity: 0;
+          }
+          to {
+            transform: translateY(0);
+            opacity: 1;
+          }
         }
         .animate-fade-in {
           animation: fade-in 0.5s ease-out forwards;
