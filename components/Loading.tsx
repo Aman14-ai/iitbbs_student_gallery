@@ -150,7 +150,7 @@ const JokeLoadingPage = () => {
                   exit={{ opacity: 0, height: 0 }}
                   className="mt-3 text-gray-700 font-bold"
                 >
-                  Because you are a chutiya . Nothing is going to happen. Database Dropped! 😂
+                  Sorry about that. Nothing is going to happen. Database Dropped! 😂
                 </motion.p>
               )}
             </AnimatePresence>
