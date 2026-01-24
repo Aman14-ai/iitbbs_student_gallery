@@ -79,18 +79,8 @@ const Page = () => {
     setIsLoading(false);
   };
 
-  const downloadAll = () => {
-    photoUrl.forEach((photo) => {
-      const a = document.createElement("a");
-      a.href = photo.url;
-      a.download = photo.url.split("/").pop() || "photo.jpg";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-    });
-  };
 
-  // return <LoadingAnimation />;
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 py-8 px-4">
