@@ -9,10 +9,54 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Loader2, Search, User, Sparkles } from "lucide-react";
-import { flightRouterStateSchema } from "next/dist/server/app-render/types";
-import LoadingAnimation from "@/components/Loading";
+import { Loader2, Search, User, Sparkles, X } from "lucide-react";
 
+// ---------- Full‑Screen Image Modal ----------
+const ImageModal = ({
+  src,
+  alt,
+  onClose,
+}: {
+  src: string;
+  alt: string;
+  onClose: () => void;
+}) => {
+  // Close on Escape key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 transition-opacity duration-300 animate-fade-in"
+      onClick={onClose} // close on backdrop click
+    >
+      <div
+        className="relative max-w-4xl max-h-[90vh] w-full transform transition-transform duration-300 scale-100 animate-zoom-in"
+        onClick={(e) => e.stopPropagation()} // prevent closing when clicking image
+      >
+        <img
+          src={src}
+          alt={alt}
+          className="w-full h-full object-contain rounded-2xl shadow-2xl"
+        />
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 p-2 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/40 transition-colors"
+          aria-label="Close"
+        >
+          <X className="h-6 w-6" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ---------- Main Page ----------
 const Page = () => {
   const [year, setYear] = useState("");
   const [branch, setBranch] = useState("");
@@ -21,25 +65,12 @@ const Page = () => {
   const [photoUrl, setPhotoUrl] = useState<{ url: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
+  const [selectedPhoto, setSelectedPhoto] = useState<string | null>(null); // for modal
 
+  // Reset error when fields change
   useEffect(() => {
     if (error) setError("");
   }, [year, branch, startRoll, endRoll]);
-
-  // First, you need to add this state variable at the top of your component
-  const [dots, setDots] = useState("");
-
-  // Then add this useEffect hook to animate the dots
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setDots((prev) => {
-        if (prev.length === 3) return "";
-        return prev + ".";
-      });
-    }, 500);
-
-    return () => clearInterval(timer);
-  }, []);
 
   const handleSubmit = async () => {
     if (!year || !branch || !startRoll || !endRoll) {
@@ -62,8 +93,9 @@ const Page = () => {
 
     setIsLoading(true);
     setError("");
+    setPhotoUrl([]);
 
-    // Simulate network delay for better UX feedback
+    // Simulate network delay
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     const urls: { url: string }[] = [];
@@ -78,9 +110,6 @@ const Page = () => {
     setPhotoUrl(urls);
     setIsLoading(false);
   };
-
-
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-100 py-8 px-4">
@@ -119,6 +148,7 @@ const Page = () => {
                   <SelectItem value="23">2023</SelectItem>
                   <SelectItem value="24">2024</SelectItem>
                   <SelectItem value="25">2025</SelectItem>
+                  <SelectItem value="26">2026</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -142,7 +172,7 @@ const Page = () => {
                   <SelectItem value="ME">Mechanical Engineering</SelectItem>
                   <SelectItem value="MM">Metallurgical Engineering</SelectItem>
                   <SelectItem value="EP">Engineering Physics</SelectItem>
-                  <SelectItem value="MC">Mathematics and computing</SelectItem>
+                  <SelectItem value="MC">Mathematics and Computing</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -220,8 +250,9 @@ const Page = () => {
           {photoUrl.map((photo, index) => (
             <div
               key={photo.url}
-              className="group flex flex-col items-center bg-white rounded-2xl shadow-sm p-3 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 animate-fade-in"
+              className="group flex flex-col items-center bg-white rounded-2xl shadow-sm p-3 hover:shadow-xl transition-all duration-300 hover:-translate-y-1 animate-fade-in cursor-pointer"
               style={{ animationDelay: `${index * 0.05}s` }}
+              onClick={() => setSelectedPhoto(photo.url)}
             >
               <div className="relative overflow-hidden rounded-xl w-full aspect-square mb-2">
                 <img
@@ -234,7 +265,7 @@ const Page = () => {
                       "data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YzZjZmOSIvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjgwIiByPSI0MCIgZmlsbD0iI2Q0ZDhkZiIvPjxjaXJjbGUgY3g9IjEwMCIgY3k9IjE2MCIgcng9IjYwIiByeT0iNDAiIGZpbGw9IiNkNGQ4ZGYiLz48L3N2Zz4=";
                   }}
                 />
-                <div className="absolute inset-0  bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300"></div>
+                <div className="absolute inset-0 bg-opacity-0 group-hover:bg-opacity-10 transition-all duration-300"></div>
               </div>
               <span className="text-xs font-mono text-gray-500 truncate max-w-full">
                 {photo.url.split("/").pop()}
@@ -259,7 +290,16 @@ const Page = () => {
         )}
       </div>
 
-      {/* Add custom animations */}
+      {/* Full‑Screen Modal */}
+      {selectedPhoto && (
+        <ImageModal
+          src={selectedPhoto}
+          alt="Student photo"
+          onClose={() => setSelectedPhoto(null)}
+        />
+      )}
+
+      {/* Custom animations */}
       <style jsx global>{`
         @keyframes fade-in {
           from {
@@ -279,11 +319,24 @@ const Page = () => {
             opacity: 1;
           }
         }
+        @keyframes zoom-in {
+          from {
+            transform: scale(0.8);
+            opacity: 0;
+          }
+          to {
+            transform: scale(1);
+            opacity: 1;
+          }
+        }
         .animate-fade-in {
           animation: fade-in 0.5s ease-out forwards;
         }
         .animate-slide-up {
           animation: slide-up 0.5s ease-out forwards;
+        }
+        .animate-zoom-in {
+          animation: zoom-in 0.3s ease-out forwards;
         }
       `}</style>
     </div>
