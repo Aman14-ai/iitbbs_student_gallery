@@ -60,8 +60,8 @@ const ImageModal = ({
 const Page = () => {
   const [year, setYear] = useState("");
   const [branch, setBranch] = useState("");
-  const [startRoll, setStartRoll] = useState("");
-  const [endRoll, setEndRoll] = useState("");
+  // const [startRoll, setStartRoll] = useState("");
+  // const [endRoll, setEndRoll] = useState("");
   const [photoUrl, setPhotoUrl] = useState<{ url: string }[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -70,26 +70,19 @@ const Page = () => {
   // Reset error when fields change
   useEffect(() => {
     if (error) setError("");
-  }, [year, branch, startRoll, endRoll]);
+  }, [year, branch]);
 
   const handleSubmit = async () => {
-    if (!year || !branch || !startRoll || !endRoll) {
+    if (!year || !branch) {
       setError("Please fill all fields");
       return;
     }
 
-    const start = parseInt(startRoll);
-    const end = parseInt(endRoll);
+    
 
-    if (isNaN(start) || isNaN(end) || start > end) {
-      setError("Invalid roll number range");
-      return;
-    }
+    
 
-    if (end - start > 50) {
-      setError("Maximum range is 50 students at a time");
-      return;
-    }
+
 
     setIsLoading(true);
     setError("");
@@ -99,12 +92,23 @@ const Page = () => {
     await new Promise((resolve) => setTimeout(resolve, 800));
 
     const urls: { url: string }[] = [];
-    for (let i = start; i <= end; i++) {
-      urls.push({
-        url: `https://erp.iitbbs.ac.in/photo/${year}${branch}010${i
-          .toString()
-          .padStart(2, "0")}.JPG`,
-      });
+    for (let i = 1; i <= 110; i++) {
+      if(i<100)
+      {
+          urls.push({
+          url: `https://erp.iitbbs.ac.in/photo/${year}${branch}010${i
+            .toString()
+            .padStart(2, "0")}.JPG`,
+        });
+      }
+      else
+      {
+        urls.push({
+          url: `https://erp.iitbbs.ac.in/photo/${year}${branch}01${i
+            .toString()
+            .padStart(2, "0")}.JPG`,
+        });
+      }
     }
 
     setPhotoUrl(urls);
@@ -131,7 +135,7 @@ const Page = () => {
 
         {/* Input Form */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-10 animate-slide-up">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
             {/* Year Select */}
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-700">
@@ -176,36 +180,6 @@ const Page = () => {
                 </SelectContent>
               </Select>
             </div>
-
-            {/* Roll Inputs */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Roll Number Range
-              </label>
-              <div className="flex gap-2">
-                <Input
-                  placeholder="Start"
-                  value={startRoll}
-                  onChange={(e) =>
-                    setStartRoll(e.target.value.replace(/\D/g, ""))
-                  }
-                  className="h-12 rounded-xl border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-                  type="number"
-                  min="1"
-                />
-                <Input
-                  placeholder="End"
-                  value={endRoll}
-                  onChange={(e) =>
-                    setEndRoll(e.target.value.replace(/\D/g, ""))
-                  }
-                  className="h-12 rounded-xl border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all"
-                  type="number"
-                  min="1"
-                />
-              </div>
-            </div>
-
             {/* Submit Button */}
             <Button
               onClick={handleSubmit}
